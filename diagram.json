@@ -192,6 +192,20 @@
       "top": -105.64,
       "left": 381.43,
       "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-tm1637-7segment",
+      "id": "sevseg3",
+      "top": 100,
+      "left": 400,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-tm1637-7segment",
+      "id": "sevseg4",
+      "top": 100,
+      "left": -300,
+      "attrs": { "color": "red" }
     }
   ],
   "connections": [
@@ -240,7 +254,18 @@
     [ "sevseg2:GND", "esp:GND.1", "black", [ "h0" ] ],
     [ "sevseg2:VCC", "esp:5V", "red", [ "h0" ] ],
     [ "sevseg2:DIO", "esp:18", "green", [ "h0" ] ],
-    [ "sevseg2:CLK", "esp:19", "green", [ "h0" ] ]
+    [ "sevseg2:CLK", "esp:19", "green", [ "h0" ] ],
+
+    [ "sevseg3:GND", "esp:GND.1", "black", [ "h0" ] ],
+    [ "sevseg3:VCC", "esp:5V", "red", [ "h0" ] ],
+    [ "sevseg3:CLK", "esp:27", "green", [ "h0" ] ],
+    [ "sevseg3:DIO", "esp:26", "green", [ "h0" ] ],
+
+    [ "sevseg4:GND", "esp:GND.1", "black", [ "h0" ] ],
+    [ "sevseg4:VCC", "esp:5V", "red", [ "h0" ] ],
+    [ "sevseg4:CLK", "esp:19", "green", [ "h0" ] ],
+    [ "sevseg4:DIO", "esp:18", "green", [ "h0" ] ]
+
   ],
   "dependencies": {}
 }

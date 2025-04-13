@@ -10,15 +10,25 @@ const int ledRed2 = 2;
 const int ledYellow2 = 16;
 const int ledGreen2 = 5;
 
-// --- Chân TM1637 ---
+// --- Chân TM1637 cho 2 bảng cũ ---
 #define CLK1 27
 #define DIO1 26
 #define CLK2 19
 #define DIO2 18
 
+// --- Chân TM1637 cho 2 bảng mới ---
+#define CLK3 22
+#define DIO3 21
+#define CLK4 23
+#define DIO4 25
+
 // --- Khởi tạo TM1637 ---
+// Bảng cũ:
 TM1637Display display1(CLK1, DIO1);
 TM1637Display display2(CLK2, DIO2);
+// Bảng mới:
+TM1637Display display3(CLK3, DIO3);
+TM1637Display display4(CLK4, DIO4);
 
 // --- Thời gian ---
 const unsigned long greenTime = 25000;
@@ -43,6 +53,8 @@ void setLaneLights(int redPin, int yellowPin, int greenPin, bool red, bool yello
 }
 
 // --- Cập nhật màn hình TM1637 ---
+// Hàm này chuyển đổi mili-giây còn lại thành số giây và hiển thị trên màn hình 7 đoạn.
+// Nếu dưới 4 giây, hiển thị sẽ nhấp nháy.
 void update7SegmentDisplay(TM1637Display &display, unsigned long timeMs) {
   int seconds = max((unsigned long)1, (timeMs + 999) / 1000); // Luôn hiển thị ít nhất 1 giây
 
@@ -59,7 +71,7 @@ void update7SegmentDisplay(TM1637Display &display, unsigned long timeMs) {
 void setup() {
   Serial.begin(115200);
 
-  // Khởi tạo chân
+  // Khởi tạo chân LED
   pinMode(ledRed1, OUTPUT);
   pinMode(ledYellow1, OUTPUT);
   pinMode(ledGreen1, OUTPUT);
@@ -67,14 +79,15 @@ void setup() {
   pinMode(ledYellow2, OUTPUT);
   pinMode(ledGreen2, OUTPUT);
 
-  display1.setBrightness(0x0f);
-  display2.setBrightness(0x0f);
-  display1.clear();
-  display2.clear();
+  // Khởi tạo màn hình 7 đoạn:
+  display1.setBrightness(0x0f); display1.clear();
+  display2.setBrightness(0x0f); display2.clear();
+  display3.setBrightness(0x0f); display3.clear();
+  display4.setBrightness(0x0f); display4.clear();
 
-  // Trạng thái ban đầu
-  setLaneLights(ledRed1, ledYellow1, ledGreen1, LOW, LOW, HIGH);  // Lane 1 Green
-  setLaneLights(ledRed2, ledYellow2, ledGreen2, HIGH, LOW, LOW);  // Lane 2 Red
+  // Trạng thái ban đầu: Lane 1 đèn xanh, Lane 2 đèn đỏ
+  setLaneLights(ledRed1, ledYellow1, ledGreen1, LOW, LOW, HIGH);
+  setLaneLights(ledRed2, ledYellow2, ledGreen2, HIGH, LOW, LOW);
 
   previousMillis = millis();
 }
@@ -84,7 +97,7 @@ void loop() {
   unsigned long elapsedTime = currentMillis - previousMillis;
   unsigned long remainingTime = (currentInterval > elapsedTime) ? (currentInterval - elapsedTime) : 0;
 
-  // Chuyển trạng thái
+  // Chuyển trạng thái khi thời gian hiện tại đã hết
   if (elapsedTime >= currentInterval) {
     previousMillis = currentMillis;
     elapsedTime = 0;
@@ -122,7 +135,7 @@ void loop() {
     remainingTime = currentInterval;
   }
 
-  // Cập nhật thời gian còn lại cho mỗi làn
+  // Tính toán thời gian còn lại cho mỗi làn dựa vào trạng thái hiện tại
   unsigned long lane1Time = 0;
   unsigned long lane2Time = 0;
 
@@ -145,8 +158,14 @@ void loop() {
       break;
   }
 
+  // Cập nhật thông tin đếm thời gian lên 4 màn hình 7 đoạn:
+  // display1 và display3 hiển thị thời gian của Lane 1
+  // display2 và display4 hiển thị thời gian của Lane 2
   update7SegmentDisplay(display1, lane1Time);
   update7SegmentDisplay(display2, lane2Time);
+  update7SegmentDisplay(display3, lane1Time);
+  update7SegmentDisplay(display4, lane2Time);
+  
 
-  delay(200); // Giảm tần suất update màn hình, tránh flickering
+  delay(200); // Giảm tần suất cập nhật để tránh hiện tượng nhấp nháy quá mức
 }

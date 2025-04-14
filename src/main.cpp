@@ -10,6 +10,20 @@ const int ledRed2 = 2;
 const int ledYellow2 = 16;
 const int ledGreen2 = 5;
 
+//--- Chân button ---
+// Nút điều khiển (dùng chân nào tùy bạn)
+const int buttonRed = 21;
+const int buttonGreen = 22;
+const int buttonReset = 23;
+
+enum Mode {
+  MODE_AUTO,
+  MODE_MANUAL_RED,
+  MODE_MANUAL_GREEN
+};
+
+Mode currentMode = MODE_AUTO;
+
 // --- Chân TM1637 ---
 #define CLK1 27
 #define DIO1 26
@@ -64,6 +78,11 @@ void setup() {
   display1.clear();
   display2.clear();
 
+  // Khởi tạo nút bấm
+  pinMode(buttonRed, INPUT_PULLUP);
+  pinMode(buttonGreen, INPUT_PULLUP);
+  pinMode(buttonReset, INPUT_PULLUP);
+
   // Trạng thái ban đầu
   setLaneLights(ledRed1, ledYellow1, ledGreen1, LOW, LOW, HIGH);  // Lane 1 Green
   setLaneLights(ledRed2, ledYellow2, ledGreen2, HIGH, LOW, LOW);  // Lane 2 Red
@@ -76,6 +95,34 @@ void loop() {
   unsigned long elapsedTime = currentMillis - previousMillis;
   unsigned long remainingTime = (currentInterval > elapsedTime) ? (currentInterval - elapsedTime) : 0;
 
+  // Kiểm tra nút bấm
+  // Đọc nút (nhấn = LOW do dùng INPUT_PULLUP)
+  if (digitalRead(buttonRed) == LOW) {
+    currentMode = MODE_MANUAL_RED;
+  } else if (digitalRead(buttonGreen) == LOW) {
+    currentMode = MODE_MANUAL_GREEN;
+  } else if (digitalRead(buttonReset) == LOW) {
+    currentMode = MODE_AUTO;
+    previousMillis = millis(); // Reset mốc thời gian
+  }
+  if (currentMode == MODE_MANUAL_RED) {
+    setLaneLights(ledRed1, ledYellow1, ledGreen1, HIGH, LOW, LOW); // Nhóm 1 đỏ
+    setLaneLights(ledRed2, ledYellow2, ledGreen2, LOW, LOW, HIGH); // Nhóm 2 xanh
+    display1.showNumberDec(88, false); // Hiển thị đặc biệt
+    display2.showNumberDec(88, false);
+    delay(200);
+    return;
+  }
+
+  if (currentMode == MODE_MANUAL_GREEN) {
+    setLaneLights(ledRed1, ledYellow1, ledGreen1, LOW, LOW, HIGH); // Nhóm 1 xanh
+    setLaneLights(ledRed2, ledYellow2, ledGreen2, HIGH, LOW, LOW); // Nhóm 2 đỏ
+    display1.showNumberDec(88, false);
+    display2.showNumberDec(88, false);
+    delay(200);
+    return;
+  }
+  // Chế độ tự động
   // Chuyển trạng thái
   if (elapsedTime >= currentInterval) {
     previousMillis = currentMillis;
